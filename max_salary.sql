@@ -37,3 +37,9 @@ WHERE c = 1);
 SELECT salary
 FROM employees 
 WHERE salary > ALL(SELECT salary -1 FROM employees);
+
+--Using row limiting clause
+SELECT salary
+FROM employees
+ORDER BY salary DESC
+FETCH FIRST ROW ONLY;

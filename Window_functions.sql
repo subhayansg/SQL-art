@@ -1,7 +1,11 @@
+-- Window functions are functions that perform calculations across a set of rows related to the current row.
+-- It is comparable to the type of calculation done with an aggregate function, but unlike regular aggregate functions,
+-- window functions do not group several rows into a single output row — the rows retain their own identities.
+
+
 -- =========================================== Aggregate Window Functions SUM(), MAX(), MIN(), AVG(), COUNT()
 
 -- prepare the table and data
-
 CREATE TABLE orders_24042021
 (
 	order_id INT,
@@ -51,6 +55,19 @@ SELECT
  , SUM(order_amount) OVER(PARTITION BY city) as city_grand_total
 FROM
    orders_24042021;
+-- A window function call always contains an OVER clause directly following the window function's name and argument(s).
+-- This is what syntactically distinguishes it from a regular function or aggregate function. 
+
+-- The OVER clause determines exactly how the rows of the query are split up for processing by the window function. 
+
+-- There is no GROUP BY clause for the AVG function, but how does the SQL engine know which rows to use to compute the average? 
+-- The answer is the PARTITION BY clause inside the OVER() utility
+
+-- The PARTITION BY list within OVER specifies dividing the rows into groups, or partitions, that share the same values of the PARTITION BY expression(s).
+-- For each row, the window function is computed across the rows that fall into the same partition as the current row.
+
+-- You can also control the order in which rows are processed by window functions using ORDER BY within OVER. 
+
    
 -- POINT TO NOTE:
 -- Removing the PARTITION BY clause in the OVER() clause effectively treats the entire data set as a single window
@@ -105,6 +122,8 @@ FROM
 ;
 -- It is also worth noting that that you can use expressions in the lists like EXTRACT(MONTH FROM order_date) as shown in below query.
 -- You can make these expressions as complex as you want so long as the syntax is correct!
+
+
 
 -- ================== Preceding and Following
 -- Preceding and Following allow us to perform aggregate functions on the rows just before and after the current row.
@@ -184,6 +203,7 @@ SELECT DISTINCT
 FROM
    orders_24042021;
    
+-- =================== ORDER BY and running(cumulative) total
 -- If we add the ORDER BY clause in the OVER() clause along with PARTITION BY
 -- We would get cumulative average per city
 SELECT
@@ -196,7 +216,11 @@ SELECT
                           order_date) as cum_avg_per_city
 FROM
    orders_24042021
-   
+-- The window ORDER BY does not sort the entire result set instead of that in sorts the result in each partition
+-- and we get cumulative/running average of order_amount for each city
+
+
+
    
    
 -- =========================================== Ranking Window Functions RANK(), DENSE_RANK(), ROW_NUMBER(), NTILE()
@@ -269,6 +293,31 @@ FROM
 
 
 
+-- ====================== Filtering data
+-- If there is a need to filter or group rows after the window calculations are performed, you can use a subquery like below
+-- Let's say we want the second highest order_amount of each city
+SELECT
+   order_id
+ , order_date
+ , customer_name
+ , city
+ , order_amount
+FROM
+   (
+      SELECT
+         order_id
+       , order_date
+       , customer_name
+       , city
+       , order_amount
+       , RANK() OVER(PARTITION BY city ORDER BY order_amount DESC) as rank_of_ordr_amt
+      FROM
+         orders_24042021
+   )
+WHERE
+   rank_of_ordr_amt= 2
+;
+
 -- ======================== ROW_NUMBER()
 -- This function assigns a unique row number to each record.
 
@@ -298,6 +347,20 @@ SELECT
 FROM
    orders_24042021
 ;
+
+/*
+Similarities between RANK, DENSE_RANK, and ROW_NUMBER Functions
+===============================================================
+The RANK, DENSE_RANK and ROW_NUMBER Functions have the following similarities:
+1- All of them require an order by clause.
+2- All of them return an increasing integer with a base value of 1.
+3- When combined with a PARTITION BY clause, all of these functions reset the returned integer value to 1 as we have seen.
+4- If there are no duplicated values in the column used by the ORDER BY clause, these functions return the same output.
+
+Difference between RANK, DENSE_RANK and ROW_NUMBER Functions
+============================================================
+The only difference between RANK, DENSE_RANK and ROW_NUMBER function is when there are duplicate values in the column being used in ORDER BY Clause.
+*/
 
 
 -- ======================== NTILE(n)

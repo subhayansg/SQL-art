@@ -51,17 +51,6 @@ SELECT
  , SUM(order_amount) OVER(PARTITION BY city) as city_grand_total
 FROM
    orders_24042021;
-
-FROM
-   orders_24042021   
-SELECT
-   order_id
- , order_date
- , customer_name
- , city
- , order_amount
- , SUM(order_amount) OVER(PARTITION BY city) as city_grand_total
-;
    
 -- POINT TO NOTE:
 -- Removing the PARTITION BY clause in the OVER() clause effectively treats the entire data set as a single window

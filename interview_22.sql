@@ -11,9 +11,13 @@
 | w1      | 18    |
 | w1      | 1000  |
 +---------+-------+
+
+
+WORK	SGT1000	COUNT
+w1	3	7
 */
 
-CREATE TABLE h (work string, s int);
+CREATE TABLE h (work VARCHAR2(2), s int);
 INSERT INTO h VALUES('w1', 20);
 INSERT INTO h VALUES('w1', 1000);
 INSERT INTO h VALUES('w1', 10);
@@ -26,8 +30,8 @@ INSERT INTO h VALUES('w1', 1000);
 
 SELECT
    work
- , SUM(id)
- , COUNT(*)
+ , SUM(id) sgt1000
+ , COUNT(*) count
 FROM
    (
       SELECT
